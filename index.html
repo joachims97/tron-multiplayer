@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multiplayer Tron Light-Cycles</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: #0ff;
+      overflow: hidden;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    h1 {
+      color: #0ff;
+      text-align: center;
+      margin-bottom: 30px;
+      text-shadow: 0 0 10px #0ff;
+    }
+    
+    .input-group {
+      margin-bottom: 15px;
+      width: 100%;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #0ff;
+    }
+    
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #0ff;
+      background-color: rgba(0, 255, 255, 0.1);
+      color: #fff;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    
+    button {
+      background-color: #0ff;
+      color: #000;
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-top: 10px;
+      transition: all 0.3s;
+    }
+    
+    button:hover {
+      background-color: #00cccc;
+      box-shadow: 0 0 15px #0ff;
+    }
+    
+    button:disabled {
+      background-color: #555;
+      cursor: not-allowed;
+    }
+    
+    .lobby-container, .game-container {
+      display: none;
+      width: 100%;
+    }
+    
+    .lobby-info {
+      background-color: rgba(0, 0, 0, 0.5);
+      border: 1px solid #0ff;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    
+    .players {
+      background-color: rgba(0, 0, 0, 0.5);
+      border: 1px solid #0ff;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    
+    li {
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+    }
+    
+    canvas {
+      width: 100%;
+      height: 100vh;
+      display: block;
+    }
+    
+    #hud {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #fff;
+      font-size: 14px;
+      z-index: 10;
+    }
+    
+    #game-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.8);
+      color: #0ff;
+      padding: 20px;
+      border-radius: 4px;
+      font-size: 24px;
+      text-align: center;
+      display: none;
+      z-index: 100;
+    }
+    
+    #message {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 0, 0, 0.8);
+      color: #0ff;
+      padding: 10px 20px;
+      border-radius: 4px;
+      display: none;
+      z-index: 1000;
+    }
+    
+    .neon-glow {
+      text-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 20px #0ff;
+    }
+    
+    /* Grid background animation */
+    .background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background: 
+        linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: scrollGrid 20s linear infinite;
+    }
+    
+    @keyframes scrollGrid {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 40px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="background"></div>
+
+  <div id="join-container" class="container">
+    <h1 class="neon-glow">TRON LIGHT-CYCLES</h1>
+    <div class="input-group">
+      <label for="room-id">Room ID:</label>
+      <input type="text" id="room-id" placeholder="Enter a room ID or create a new one">
+    </div>
+    <div class="input-group">
+      <label for="player-name">Your Name:</label>
+      <input type="text" id="player-name" placeholder="Enter your name">
+    </div>
+    <button id="join-btn">Join Game</button>
+    <div id="connection-status"></div>
+  </div>
+
+  <div id="lobby-container" class="container">
+    <h1 class="neon-glow">GAME LOBBY</h1>
+    <div class="lobby-info">
+      <h3>Room ID: <span id="room-id-display" class="neon-glow"></span></h3>
+      <button id="share-btn">Share Link</button>
+    </div>
+    <div class="players">
+      <h3>Players:</h3>
+      <ul id="player-list"></ul>
+    </div>
+    <button id="ready-btn">Ready</button>
+    <p>Both players must click Ready to start the game</p>
+  </div>
+
+  <div id="game-container">
+    <div id="hud">W/S = speed | A/D = turn</div>
+    <canvas id="game-canvas"></canvas>
+    <div id="game-message"></div>
+  </div>
+
+  <div id="message"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script src="game.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
